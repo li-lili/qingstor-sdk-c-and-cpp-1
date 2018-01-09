@@ -1,0 +1,34 @@
+# - Find JSONCPP
+# Find the native JSONCPP includes and library
+#
+#  JSONCPP_INCLUDE_DIR  - where to find json.h, etc.
+#  JSONCPP_LIBRARIES    - List of libraries when using YAML.
+#  JSONCPP_FOUND        - True if JSONCPP found.
+
+IF(JSONCPP_INCLUDE_DIR AND JSONCPP_LIBRARIES)
+  # Already in cache, be silent
+  SET(JSONCPP_FIND_QUIETLY TRUE)
+ENDIF (JSONCPP_INCLUDE_DIR AND JSONCPP_LIBRARIES)
+
+MESSAGE(${PROJECT_SOURCE_DIR}/lib)
+IF (WIN32)  
+	FIND_PATH(JSONCPP_INCLUDE_DIR json.h ${PROJECT_SOURCE_DIR}/src/include/external/jsoncpp)
+	SET(JSONCPP_NAMES libjson)
+	FIND_LIBRARY(JSONCPP_LIBRARIES ${JSONCPP_NAMES} ${PROJECT_SOURCE_DIR}/lib)
+ELSEIF (APPLE)  
+	FIND_PATH(JSONCPP_INCLUDE_DIR json.h ${PROJECT_SOURCE_DIR}/src/include/external/jsoncpp)
+	SET(JSONCPP_NAMES jsoncpp_lib)
+	FIND_LIBRARY(JSONCPP_LIBRARIES ${JSONCPP_NAMES} ${PROJECT_SOURCE_DIR}/lib)
+ELSE()  
+	SET(JSONCPP_NAMES libjsoncpp.so)
+	FIND_PATH(JSONCPP_INCLUDE_DIR  json  /usr/local/include/jsoncpp /usr/include/jsoncpp)
+	FIND_LIBRARY(JSONCPP_LIBRARIES ${JSONCPP_NAMES} /usr/local/lib)
+ENDIF ()  
+
+
+# handle the QUIETLY and REQUIRED arguments and set JSONCPP_FOUND to TRUE if 
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(jsoncpp DEFAULT_MSG JSONCPP_LIBRARIES JSONCPP_INCLUDE_DIR)
+
+MARK_AS_ADVANCED(JSONCPP_LIBRARIES JSONCPP_INCLUDE_DIR)
