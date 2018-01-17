@@ -74,15 +74,6 @@ AUTO_SOURCES(files "service_with_c_style/types/*.h" "${libqingstor_INCLUDE_DIR}"
 SET(HEADER_TYPES_CStyle ${files})
 ENDIF()
 
-ADD_LIBRARY(libqingstor-static STATIC ${libqingstor_SOURCES})
-ADD_LIBRARY(libqingstor-shared SHARED ${libqingstor_SOURCES})
-
-ADD_CUSTOM_COMMAND(
-    TARGET libqingstor-shared libqingstor-static
-    PRE_BUILD
-    COMMAND echo ${libqingstor_VERSION_STRING} > version
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
 
 INCLUDE_DIRECTORIES(${libqingstor_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${libqingstor_INCLUDE_DIR}/external)
@@ -90,33 +81,37 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
 
-TARGET_LINK_LIBRARIES(libqingstor-static ${CURL_LIBRARIES})
-TARGET_LINK_LIBRARIES(libqingstor-shared ${CURL_LIBRARIES})
-
-TARGET_LINK_LIBRARIES(libqingstor-static ${OPENSSL_SSL_LIBRARIES})
-TARGET_LINK_LIBRARIES(libqingstor-shared ${OPENSSL_SSL_LIBRARIES})
-TARGET_LINK_LIBRARIES(libqingstor-static ${OPENSSL_CRYPTO_LIBRARIES})
-TARGET_LINK_LIBRARIES(libqingstor-shared ${OPENSSL_CRYPTO_LIBRARIES})
-
-# in windows, curl depend on libs:Ws2_32.lib and Wldap32.lib
+# On windows, generate static library
 IF (WIN32)  
+
+    ADD_LIBRARY(libqingstor-static STATIC ${libqingstor_SOURCES})
+    TARGET_LINK_LIBRARIES(libqingstor-static ${CURL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(libqingstor-static ${OPENSSL_SSL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(libqingstor-static ${OPENSSL_CRYPTO_LIBRARIES})
+    # in windows, curl depend on libs:Ws2_32.lib and Wldap32.lib
     TARGET_LINK_LIBRARIES(libqingstor-static ${WS2_LIBRARIES})
     TARGET_LINK_LIBRARIES(libqingstor-static ${WINLDAP_LIBRARIES})
-    TARGET_LINK_LIBRARIES(libqingstor-shared ${WS2_LIBRARIES})
-    TARGET_LINK_LIBRARIES(libqingstor-shared ${WINLDAP_LIBRARIES})
-ENDIF()
-
-SET_TARGET_PROPERTIES(libqingstor-static PROPERTIES OUTPUT_NAME "qingstor")
-SET_TARGET_PROPERTIES(libqingstor-shared PROPERTIES OUTPUT_NAME "qingstor")
-
-SET_TARGET_PROPERTIES(libqingstor-shared PROPERTIES 
-    VERSION ${libqingstor_VERSION_MAJOR}.${libqingstor_VERSION_MINOR}.${libqingstor_VERSION_PATCH} 
-    SOVERSION ${libqingstor_VERSION_API})
-
-# install lib files.
-INSTALL(TARGETS libqingstor-static libqingstor-shared
+    SET_TARGET_PROPERTIES(libqingstor-static PROPERTIES OUTPUT_NAME "qingstor")
+    # install lib files.
+    INSTALL(TARGETS libqingstor-static
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+ELSE() 
+#On other platform ,generate dynamic library
+
+    ADD_LIBRARY(libqingstor-shared SHARED ${libqingstor_SOURCES})
+    TARGET_LINK_LIBRARIES(libqingstor-shared ${CURL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(libqingstor-shared ${OPENSSL_SSL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(libqingstor-shared ${OPENSSL_CRYPTO_LIBRARIES})
+    SET_TARGET_PROPERTIES(libqingstor-shared PROPERTIES OUTPUT_NAME "qingstor")
+    SET_TARGET_PROPERTIES(libqingstor-shared PROPERTIES 
+    VERSION ${libqingstor_VERSION_MAJOR}.${libqingstor_VERSION_MINOR}.${libqingstor_VERSION_PATCH} 
+    SOVERSION ${libqingstor_VERSION_API})
+    # install lib files.
+    INSTALL(TARGETS libqingstor-shared
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+ENDIF()
 
 # install header files.
 INSTALL(FILES ${HEADER} DESTINATION include/qingstor)
