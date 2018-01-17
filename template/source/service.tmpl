@@ -34,15 +34,16 @@ void QingStor::InitializeSDK(const SDKOptions & options)
     LOG_DEBUG << "Initializing SDK...";
     std::string logName = options.logPath;
     logName += "qingstor_sdk_log.txt";
-    plog::init((plog::Severity) options.logLevel, logName.c_str(), 1000000,
-               5);
+    plog::init((plog::Severity) options.logLevel, logName.c_str(), 1000000, 5);
     if (options.initAndCleanupCurl)
     {
         //InitHttp
         curl_global_init(CURL_GLOBAL_ALL);
         LOG_DEBUG << "curl_global_init done";
     }
-} 
+
+    HttpClient::CreateGlobaleCurlPool();
+}
 
 void QingStor::ShutdownSDK(const SDKOptions & options)
 {
@@ -53,6 +54,8 @@ void QingStor::ShutdownSDK(const SDKOptions & options)
         curl_global_cleanup();
         LOG_DEBUG << "curl_global_cleanup done";
     }
+
+    HttpClient::DestroyGlobaleCurlPool();
 }
 
 QingStorService::QingStorService(const QsConfig &qsConfig) : m_qsConfig(qsConfig)

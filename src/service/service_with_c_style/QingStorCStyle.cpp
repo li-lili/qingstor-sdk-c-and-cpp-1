@@ -29,14 +29,27 @@ void qs_init_sdk(const char *logfile_path, LogLevel qs_log_level,
     QingStor::SDKOptions sdkOptions;
     sdkOptions.logLevel = qs_log_level;
     sdkOptions.logPath = logfile_path;
-    if(!init_and_cleanup_curl)
-    {
+    if(!init_and_cleanup_curl){
         sdkOptions.initAndCleanupCurl = false;
     }
     else{
         sdkOptions.initAndCleanupCurl = true;
     }
+    
     QingStor::InitializeSDK(sdkOptions);
+}
+
+void qs_shutdown_sdk(uint init_and_cleanup_curl)
+{
+    QingStor::SDKOptions sdkOptions;
+    if(!init_and_cleanup_curl){
+        sdkOptions.initAndCleanupCurl = false;
+    }
+    else{
+        sdkOptions.initAndCleanupCurl = true;
+    }
+
+    QingStor::ShutdownSDK(sdkOptions);
 }
 
 qs_context_handle qs_create_service_with_configfile(const char *qs_configfile,
@@ -70,8 +83,21 @@ QS_SDK_API qs_context_handle qs_create_service(qs_config_t
         qsConfig.host = qs_config.host;
     if (qs_config.protocol)
         qsConfig.protocol = qs_config.protocol;
-    qsConfig.port = qs_config.port;
-    qsConfig.connectionRetries = qs_config.conn_retries;
+    if(0 < qs_config.port && 65535 > qs_config.port)
+    {
+        qsConfig.port = qs_config.port;
+    }
+
+    if(0 <= qs_config.conn_retries && 10 > qs_config.conn_retries)
+    {
+        qsConfig.connectionRetries = qs_config.conn_retries;
+    }
+
+    if(0 <= qs_config.timeout_period && 100 > qs_config.timeout_period)
+    {
+        qsConfig.timeOutPeriod = qs_config.timeout_period;
+    }
+
     context_hdl.pQsService = new QingStorService(qsConfig);
     context_hdl.pQsBucket =
         new Bucket(qsConfig, qs_bucket_name, qs_bucket_zone);
@@ -82,11 +108,13 @@ void qs_release_service(qs_context_handle context_hdl)
 {
     if (context_hdl.pQsService)
     {
-        delete context_hdl.pQsService;
+        QingStorService * pQsService2Delete = (QingStorService *)context_hdl.pQsService;
+        delete pQsService2Delete;
     }
     if (context_hdl.pQsBucket)
     {
-        delete context_hdl.pQsBucket;
+        Bucket * pBucket2Delete = (Bucket *)context_hdl.pQsBucket;
+        delete pBucket2Delete;
     }
 }
 

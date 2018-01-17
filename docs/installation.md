@@ -46,9 +46,7 @@ cmake <path-to-root-of-this-source-code>
 
 You can use the following variations to create your build directory:
 * For Auto Make build systems:
-`make`
-* For Visual Studio:
-`msbuild ALL_BUILD.vcxproj`
+`make`W
 
 To create a **release build**, do one of the following:
 * For Auto Make build systems:

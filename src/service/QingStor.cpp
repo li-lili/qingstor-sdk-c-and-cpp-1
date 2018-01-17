@@ -19,6 +19,7 @@
 #include "QsConfig.h"
 #include "request/QsRequest.h"
 #include "http/HttpResponse.h"
+#include "http/HttpClient.h"
 #include "external/plog/Log.h"
 #include "external/json/json.h"
 
@@ -37,6 +38,8 @@ void QingStor::InitializeSDK(const SDKOptions & options)
         curl_global_init(CURL_GLOBAL_ALL);
         LOG_DEBUG << "curl_global_init done";
     }
+
+    HttpClient::CreateGlobaleCurlPool();
 }
 
 void QingStor::ShutdownSDK(const SDKOptions & options)
@@ -48,6 +51,8 @@ void QingStor::ShutdownSDK(const SDKOptions & options)
         curl_global_cleanup();
         LOG_DEBUG << "curl_global_cleanup done";
     }
+
+    HttpClient::DestroyGlobaleCurlPool();
 }
 
 QingStorService::QingStorService(const QsConfig & qsConfig):m_qsConfig(qsConfig)
