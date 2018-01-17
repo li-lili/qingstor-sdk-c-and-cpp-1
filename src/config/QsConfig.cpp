@@ -76,12 +76,16 @@ QsError QsConfig::LoadConfigFile(const std::string &config_file)
     if (!yaml_parser_initialize(&parser))
     {
         LOG_FATAL << "couldn't initialize yaml parser";
+
+        return QS_ERR_INVAILD_CONFIG_FILE;
     }
     /* Open configuration file */
     if ((fh = fopen(config_file.c_str(), "rb")) == NULL)
     {
         yaml_parser_delete(&parser);
         LOG_FATAL << "couldn't open configure file " << config_file.c_str();
+
+        return QS_ERR_INVAILD_CONFIG_FILE;
     }
     /* Set input file */
     yaml_parser_set_input_file(&parser, fh);
