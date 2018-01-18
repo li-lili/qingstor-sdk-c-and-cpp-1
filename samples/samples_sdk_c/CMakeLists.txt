@@ -1,0 +1,20 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+PROJECT(Example_sdk_c)
+
+SET(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb -L /lib64 -l pthread")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" $ {CMAKE_MODULE_PATH})
+
+SET(SRC_LIST main.c)
+IF (APPLE) 
+INCLUDE_DIRECTORIES( /usr/local/include/ )
+SET(LIBRARYS_MY  /usr/local/lib/libqingstor.dylib)
+ELSE() 
+SET(LIBRARYS_MY  /usr/local/lib/libqingstor.so) 
+ENDIF()
+
+ADD_EXECUTABLE(Example_sdk_c ${SRC_LIST})
+
+TARGET_LINK_LIBRARIES(Example_sdk_c ${LIBRARYS_MY})
