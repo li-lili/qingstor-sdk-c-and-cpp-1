@@ -445,12 +445,6 @@ typedef  QsDefaultResponseUnparker<{{$operation.ID}}Output> {{$opID}}Unparker;
 	{{- end -}}
 {{end}}
 
-{{define "PropertyTagsDashConnected"}}
-	{{- $property := . -}}
-	{{- printf `json:"%s"` ($property.Name | dashConnected) -}}
-	{{- printf ` name:"%s"` ($property.Name | dashConnected) -}}
-{{end}}
-
 {{define "PropertyExtraTags"}}
 	{{- $propertyExtraTags := . -}}
 	{{- if $propertyExtraTags -}}

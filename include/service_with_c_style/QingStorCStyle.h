@@ -38,10 +38,13 @@ typedef struct
     const char *protocol;
     int port;
     int conn_retries;
+    int timeout_period;
 } qs_config_t;
 
 QS_SDK_API void qs_init_sdk(const char *logfile_path, LogLevel qs_log_level,
                             uint init_and_cleanup_curl);
+
+QS_SDK_API void qs_shutdown_sdk(uint init_and_cleanup_curl);
 
 QS_SDK_API qs_context_handle qs_create_service(qs_config_t qs_config,
         const char *qs_bucket_name,

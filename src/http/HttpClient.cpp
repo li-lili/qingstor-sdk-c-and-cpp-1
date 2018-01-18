@@ -100,6 +100,27 @@ void SetOptCodeForHttpMethod(CURL *requestHandle, const HttpRequest &request)
     }
 }
 
+void HttpClient::CreateGlobaleCurlPool()
+{
+    gCurlPool = new CurlHandlerPool(gCurlPoolSize);
+    if (!gCurlPool->Init()) {
+        LOG_FATAL << "Create CurlPool faild...";
+    }
+}
+
+void HttpClient::DestroyGlobaleCurlPool()
+{
+    if(!gCurlPool){
+        return;
+    }
+    if(!gCurlPool->Destroy())
+    {
+        LOG_FATAL << "Festroy CurlPool faild...";
+    }
+    delete gCurlPool;
+    gCurlPool = NULL;
+}
+
 HttpResponse * HttpClient::SendRequest(HttpRequest *request) const
 {
     std::string url = request->GetURIString();
@@ -125,9 +146,12 @@ HttpResponse * HttpClient::SendRequest(HttpRequest *request) const
         headers = curl_slist_append(headers, "content-type:");
     }
     HttpResponse * response = NULL;
-    CURL *connectionHandle = curl_easy_init();
+
+    CURL * connectionHandle  = gCurlPool->GetHandler();
     if (connectionHandle)
     {
+        curl_easy_reset(connectionHandle);
+
         LOG_DEBUG << "Obtained connection handle: " << connectionHandle;
         if (headers)
         {
@@ -139,7 +163,7 @@ HttpResponse * HttpClient::SendRequest(HttpRequest *request) const
         SetOptCodeForHttpMethod(connectionHandle, *request);
         curl_easy_setopt(connectionHandle, CURLOPT_TCP_NODELAY, 1L);
         curl_easy_setopt(connectionHandle, CURLOPT_NOSIGNAL, 1L);
-        curl_easy_setopt(connectionHandle, CURLOPT_TIMEOUT, 100L);
+        curl_easy_setopt(connectionHandle, CURLOPT_TIMEOUT, 600L);
         if(m_timeOutPeriod > 0)
         {
             curl_easy_setopt(connectionHandle, CURLOPT_CONNECTTIMEOUT, m_timeOutPeriod);
@@ -166,6 +190,7 @@ HttpResponse * HttpClient::SendRequest(HttpRequest *request) const
             curl_easy_setopt(connectionHandle, CURLOPT_READFUNCTION, &HttpClient::ReadBody);
             curl_easy_setopt(connectionHandle, CURLOPT_READDATA, &readContext);
         }
+        
         CURLcode curlResponseCode = curl_easy_perform(connectionHandle);
         if (curlResponseCode != CURLE_OK)
         {
@@ -210,7 +235,9 @@ HttpResponse * HttpClient::SendRequest(HttpRequest *request) const
             }
             LOG_DEBUG << "Releasing curl handle: " << connectionHandle;
         }
-        curl_easy_cleanup(connectionHandle);
+        gCurlPool->ReturnHandler(connectionHandle);
+        connectionHandle = NULL;
+
         //go ahead and flush the response body stream
         if (response)
         {

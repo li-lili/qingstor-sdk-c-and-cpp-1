@@ -20,7 +20,6 @@
 
 #include  "QsSdkOption.h"
 #include  "Bucket.h"
-//#include  <atomic>
 
 namespace QingStor
 {
@@ -41,7 +40,7 @@ struct QS_SDK_API SDKOptions
     LogLevel logLevel;
 
     // Defaults to aws_sdk_. This will only be used if the default logger is used.
-    const char *logPath;
+    std::string *logPath;
 };
 
 QS_SDK_API void InitializeSDK(const SDKOptions &options);

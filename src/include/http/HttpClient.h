@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "CurlHandlerPool.h"
 #include "QsSdkOption.h"
 #include "QsConfig.h"
 #include <curl/curl.h>
@@ -26,6 +27,8 @@ namespace QingStor
 {
 namespace Http
 {
+static CurlHandlerPool* gCurlPool           = NULL;
+static int              gCurlPoolSize       = 32;
 
 class HttpRequest;
 class HttpResponse;
@@ -41,6 +44,10 @@ public:
 
     // Send an http request, returns the newly allocated HttpResponse
     HttpResponse * SendRequest(HttpRequest *request) const;
+
+    static void CreateGlobaleCurlPool();
+
+    static void DestroyGlobaleCurlPool();
 
 private:
     //bool m_allowRedirects;
